@@ -1,0 +1,25 @@
+[mcp]
+host = "127.0.0.1"
+port = 8765
+log_level = "INFO"
+
+[browser]
+headless = false
+proxy = ""
+channel = "msedge"
+user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0"
+locale = "en-US"
+timezone_id = "America/New_York"
+
+[browser.viewport]
+width = 960
+height = 1000
+
+[browser.launch]
+args = [
+  "--disable-blink-features=AutomationControlled",
+  "--no-sandbox",
+  "--disable-infobars",
+  "--disable-extensions",
+]
+ignore_default_args = ["--enable-automation"]

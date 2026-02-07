@@ -10,11 +10,6 @@ A browser automation MCP Server built on Playwright + FastMCP, designed for more
 .
 |-- config.toml
 |-- mcp_server.py
-|-- fetch_all_etf.py
-|-- etf_fetcher/
-|   |-- __init__.py
-|   |-- __main__.py
-|   `-- client.py
 |-- StealthKit/
 |   |-- browser.py
 |   |-- config.py
@@ -31,7 +26,6 @@ A browser automation MCP Server built on Playwright + FastMCP, designed for more
 - Console and network logs for debugging
 - `storage_state` save/load
 - Screenshot and Base64 screenshot
-- ETF full-list fetcher with JSON/CSV/Pandas support
 
 ## Requirements
 
@@ -115,6 +109,8 @@ args = ["<PROJECT_ROOT>\\mcp_server.py"]
 }
 ```
 
+`type: "local"` is required for OpenCode local MCP servers.
+
 ## Tool List (`mcp_server.py`)
 
 ### Session & Tabs
@@ -170,27 +166,6 @@ args = ["<PROJECT_ROOT>\\mcp_server.py"]
 
 - `browser_console_messages(only_errors=false, limit=200)`
 - `browser_network_requests(limit=200)`
-
-## ETF Fetcher Usage
-
-### Python
-
-```python
-from etf_fetcher import fetch_all_etf, fetch_all_etf_df, save_json, save_csv
-
-items = fetch_all_etf(page_size=200, sleep_ms=30)
-save_json(items, "etf_all.json")
-save_csv(items, "etf_all.csv")
-
-df = fetch_all_etf_df(page_size=200, sleep_ms=30)
-print(df.head())
-```
-
-### CLI
-
-```powershell
-.\.venv\Scripts\python -m etf_fetcher --page-size 200 --sleep-ms 30
-```
 
 ## Notes
 

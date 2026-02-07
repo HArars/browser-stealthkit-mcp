@@ -1,13 +1,13 @@
 # stealth_kit/js.py
 
-# 核心去特征脚本：移除 webdriver，伪造 chrome 对象，修复 permissions
+# Core stealth script: remove webdriver flag, mock chrome object, patch permissions.
 STEALTH_JS = """
-// 1. 彻底移除 navigator.webdriver (包括原型链)
+// 1. Remove navigator.webdriver (including prototype chain)
 const newProto = navigator.__proto__;
 delete newProto.webdriver;
 navigator.__proto__ = newProto;
 
-// 2. 伪造 window.chrome (让网页觉得是正版 Chrome/Edge)
+// 2. Mock window.chrome to look like regular Chrome/Edge
 if (window.chrome === undefined) {
     window.chrome = {
         runtime: {},
@@ -17,7 +17,7 @@ if (window.chrome === undefined) {
     };
 }
 
-// 3. 欺骗 Permissions API
+// 3. Patch Permissions API behavior
 const originalQuery = window.navigator.permissions.query;
 window.navigator.permissions.query = (parameters) => (
     parameters.name === 'notifications' ?
@@ -25,7 +25,7 @@ window.navigator.permissions.query = (parameters) => (
     originalQuery(parameters)
 );
 
-// 4. 伪造 WebGL 厂商 (可选，防止被识别为虚拟机显卡)
+// 4. Override WebGL vendor/renderer values (optional)
 const getParameter = WebGLRenderingContext.prototype.getParameter;
 WebGLRenderingContext.prototype.getParameter = function(parameter) {
     // 37445: UNMASKED_VENDOR_WEBGL

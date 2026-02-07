@@ -18,10 +18,10 @@ class StealthBrowser:
         ignore_default_args=None,
     ):
         """
-        初始化隐匿浏览器
-        :param headless: 是否无头模式 (建议 False 以通过检测)
-        :param proxy: 代理地址 (如 "http://127.0.0.1:10809")
-        :param channel: 浏览器通道 ("msedge" 或 "chrome")
+        Initialize stealth browser wrapper.
+        :param headless: Whether to use off-screen mode (recommended False).
+        :param proxy: Proxy server, e.g. "http://127.0.0.1:10809".
+        :param channel: Browser channel ("msedge" or "chrome").
         """
         self.headless = headless
         self.proxy_cfg = {"server": proxy} if proxy else None
@@ -39,7 +39,7 @@ class StealthBrowser:
     async def __aenter__(self):
         self.playwright = await async_playwright().start()
 
-        # 1. 启动参数配置 (核心反爬)
+        # 1) Launch arguments (core anti-detection settings)
         args = list(
             self.launch_args
             or [
@@ -50,18 +50,18 @@ class StealthBrowser:
             ]
         )
         if self.headless:
-            # 伪造无头模式：把窗口挪到屏幕外，而不是真的开启 headless
+            # Pseudo-headless: move the window off-screen instead of true headless mode.
             args.append("--window-position=-10000,-10000")
 
         self.browser = await self.playwright.chromium.launch(
             channel=self.channel,
-            headless=False,  # 始终开启界面以保持指纹真实性
+            headless=False,  # Keep headed mode for more realistic browser fingerprints.
             ignore_default_args=list(self.ignore_default_args or ["--enable-automation"]),
             args=args,
             proxy=self.proxy_cfg,
         )
 
-        # 2. 上下文配置
+        # 2) Browser context settings
         self.context = await self.browser.new_context(
             user_agent=self.user_agent
             or "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0",
@@ -70,7 +70,7 @@ class StealthBrowser:
             timezone_id=self.timezone_id,
         )
 
-        # 3. 注入 JS
+        # 3) Inject stealth script
         await self.context.add_init_script(STEALTH_JS)
 
         return self
@@ -82,15 +82,15 @@ class StealthBrowser:
             await self.playwright.stop()
 
     async def get_page(self):
-        """获取一个新的隐匿页面"""
+        """Create and return a new stealth page."""
         return await self.context.new_page()
 
     def listen_json(self, page, url_fragment, callback):
         """
-        辅助工具：监听特定 URL 的 JSON 响应
-        :param page: 页面对象
-        :param url_fragment: URL 片段 (如 "api/qt/clist/get")
-        :param callback: 接收 json 数据的回调函数
+        Helper utility: listen for JSON responses matching a URL fragment.
+        :param page: Playwright page object.
+        :param url_fragment: URL fragment, e.g. "api/qt/clist/get".
+        :param callback: Callback receiving parsed JSON.
         """
         async def _async_handle(response):
             if url_fragment in response.url and response.status == 200:

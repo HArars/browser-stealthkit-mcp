@@ -1,8 +1,8 @@
-﻿# stealth-mcp
+﻿# stealth-browser-mcp
 
 [English README](README.md)
 
-一个基于 Playwright + FastMCP 的浏览器自动化 MCP Server，目标是提供更“拟人化”的浏览器行为（Stealth 注入、可选代理、多标签管理、控制台/网络日志抓取）。
+基于 Playwright + FastMCP 的浏览器自动化 MCP Server，目标是提供更拟人化的浏览器行为（Stealth 注入、可选代理、多标签管理、控制台/网络日志抓取）。
 
 ## 项目结构
 
@@ -10,11 +10,6 @@
 .
 |-- config.toml
 |-- mcp_server.py
-|-- fetch_all_etf.py
-|-- etf_fetcher/
-|   |-- __init__.py
-|   |-- __main__.py
-|   `-- client.py
 |-- StealthKit/
 |   |-- browser.py
 |   |-- config.py
@@ -31,7 +26,6 @@
 - Console 与 Network 日志调试
 - `storage_state` 保存与加载
 - 截图与 Base64 截图
-- ETF 全量分页抓取，支持 JSON/CSV/Pandas
 
 ## 依赖与环境
 
@@ -47,6 +41,63 @@ python -m venv .venv
 ```
 
 macOS/Linux 将 `./.venv/Scripts/python` 替换为 `.venv/bin/python`。
+
+## MCP Add 快速安装（Codex / Gemini / OpenCode）
+
+重要：本项目是本地 Python MCP Server。`mcp add` 一般只注册启动命令，不会自动创建 `.venv` 或安装 Python 依赖。
+
+请先执行对应系统的 bootstrap 脚本：
+
+Windows（PowerShell）：
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\python -m pip install --upgrade pip
+.\.venv\Scripts\python -m pip install mcp playwright
+.\.venv\Scripts\python -m playwright install chromium
+```
+
+macOS（zsh/bash）：
+
+```bash
+python3 -m venv .venv
+. .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install mcp playwright
+python -m playwright install chromium
+```
+
+Linux（bash）：
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install mcp playwright
+python -m playwright install chromium
+```
+
+然后执行 `mcp add`（示例）：
+
+Codex
+
+```powershell
+codex mcp add stealth_browser -- .\.venv\Scripts\python.exe mcp_server.py
+```
+
+Gemini CLI
+
+```powershell
+gemini mcp add stealth_browser -- .\.venv\Scripts\python.exe mcp_server.py
+```
+
+OpenCode
+
+```powershell
+opencode mcp add stealth_browser -- .\.venv\Scripts\python.exe mcp_server.py
+```
+
+如果你的 CLI 版本不支持 `mcp add`，请使用下面的配置文件方式。
 
 ## 启动 MCP Server
 
@@ -78,7 +129,7 @@ $env:BROWSER_PROXY="http://127.0.0.1:10809"
 ```json
 {
   "mcpServers": {
-    "stealthkit-browser": {
+    "stealth_browser": {
       "command": "<PROJECT_ROOT>/.venv/Scripts/python.exe",
       "args": ["<PROJECT_ROOT>/mcp_server.py"]
     }
@@ -86,17 +137,35 @@ $env:BROWSER_PROXY="http://127.0.0.1:10809"
 }
 ```
 
-## Codex 配置示例
+## Codex MCP 配置示例
 
 `~/.codex/config.toml`：
 
 ```toml
-[mcp_servers.stealthkit_browser]
+[mcp_servers.stealth_browser]
 command = "<PROJECT_ROOT>\\.venv\\Scripts\\python.exe"
 args = ["<PROJECT_ROOT>\\mcp_server.py"]
 ```
 
-## OpenCode local MCP 配置示例
+## Gemini Cli MCP 配置示例
+
+`~/.gemini/settings.json`：
+
+```json
+{
+  "mcpServers": {
+    "stealth_browser": {
+      "type": "local",
+      "command": [
+        "<PROJECT_ROOT>/.venv/Scripts/python.exe",
+        "<PROJECT_ROOT>/mcp_server.py"
+      ]
+    }
+  }
+}
+```
+
+## OpenCode MCP 配置示例
 
 `~/.config/opencode/opencode.json`：
 
@@ -104,7 +173,7 @@ args = ["<PROJECT_ROOT>\\mcp_server.py"]
 {
   "$schema": "https://opencode.ai/config.json",
   "mcp": {
-    "xbrowser": {
+    "stealth_browser": {
       "type": "local",
       "command": [
         "<PROJECT_ROOT>/.venv/Scripts/python.exe",
@@ -170,29 +239,3 @@ args = ["<PROJECT_ROOT>\\mcp_server.py"]
 
 - `browser_console_messages(only_errors=false, limit=200)`
 - `browser_network_requests(limit=200)`
-
-## ETF 抓取包用法
-
-### Python
-
-```python
-from etf_fetcher import fetch_all_etf, fetch_all_etf_df, save_json, save_csv
-
-items = fetch_all_etf(page_size=200, sleep_ms=30)
-save_json(items, "etf_all.json")
-save_csv(items, "etf_all.csv")
-
-df = fetch_all_etf_df(page_size=200, sleep_ms=30)
-print(df.head())
-```
-
-### CLI
-
-```powershell
-.\.venv\Scripts\python -m etf_fetcher --page-size 200 --sleep-ms 30
-```
-
-## 注意事项
-
-- `headless` 当前用于“是否将窗口移到屏幕外”；底层仍是 `playwright.launch(headless=False)`。
-- `browser_start(storage_state=...)` 为 best-effort，必要时会重建 context。

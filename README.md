@@ -1,4 +1,4 @@
-﻿# stealth-mcp
+﻿# stealth-browser-mcp
 
 [简体中文文档 (Chinese)](README.zh-CN.md)
 
@@ -42,6 +42,63 @@ python -m venv .venv
 
 On macOS/Linux, replace `./.venv/Scripts/python` with `.venv/bin/python`.
 
+## MCP Add Quick Setup (Codex / Gemini / OpenCode)
+
+Important: this project is a local Python MCP server. `mcp add` usually only registers the launch command and does not auto-create `.venv` or install Python dependencies.
+
+Run the bootstrap script for your OS first:
+
+Windows (PowerShell):
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\python -m pip install --upgrade pip
+.\.venv\Scripts\python -m pip install mcp playwright
+.\.venv\Scripts\python -m playwright install chromium
+```
+
+macOS (zsh/bash):
+
+```bash
+python3 -m venv .venv
+. .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install mcp playwright
+python -m playwright install chromium
+```
+
+Linux (bash):
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install mcp playwright
+python -m playwright install chromium
+```
+
+Then add MCP server (examples):
+
+Codex
+
+```powershell
+codex mcp add stealth_browser -- .\.venv\Scripts\python.exe mcp_server.py
+```
+
+Gemini CLI
+
+```powershell
+gemini mcp add stealth_browser -- .\.venv\Scripts\python.exe mcp_server.py
+```
+
+OpenCode
+
+```powershell
+opencode mcp add stealth_browser -- .\.venv\Scripts\python.exe mcp_server.py
+```
+
+If your CLI version does not support `mcp add`, use the config examples below.
+
 ## Start MCP Server
 
 ```powershell
@@ -72,7 +129,7 @@ $env:BROWSER_PROXY="http://127.0.0.1:10809"
 ```json
 {
   "mcpServers": {
-    "stealthkit-browser": {
+    "stealth_browser": {
       "command": "<PROJECT_ROOT>/.venv/Scripts/python.exe",
       "args": ["<PROJECT_ROOT>/mcp_server.py"]
     }
@@ -80,25 +137,24 @@ $env:BROWSER_PROXY="http://127.0.0.1:10809"
 }
 ```
 
-## Codex Config Example
+## Codex MCP Example
 
 `~/.codex/config.toml`:
 
 ```toml
-[mcp_servers.stealthkit_browser]
+[mcp_servers.stealth_browser]
 command = "<PROJECT_ROOT>\\.venv\\Scripts\\python.exe"
 args = ["<PROJECT_ROOT>\\mcp_server.py"]
 ```
 
-## OpenCode Local MCP Example
+## Gemini Cli MCP Example
 
-`~/.config/opencode/opencode.json`:
+`~/.gemini/settings.json`:
 
 ```json
 {
-  "$schema": "https://opencode.ai/config.json",
-  "mcp": {
-    "xbrowser": {
+  "mcpServers": {
+    "stealth_browser": {
       "type": "local",
       "command": [
         "<PROJECT_ROOT>/.venv/Scripts/python.exe",
@@ -109,7 +165,24 @@ args = ["<PROJECT_ROOT>\\mcp_server.py"]
 }
 ```
 
-`type: "local"` is required for OpenCode local MCP servers.
+## OpenCode MCP Example
+
+`~/.config/opencode/opencode.json`:
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "stealth_browser": {
+      "type": "local",
+      "command": [
+        "<PROJECT_ROOT>/.venv/Scripts/python.exe",
+        "<PROJECT_ROOT>/mcp_server.py"
+      ]
+    }
+  }
+}
+```
 
 ## Tool List (`mcp_server.py`)
 
@@ -166,8 +239,3 @@ args = ["<PROJECT_ROOT>\\mcp_server.py"]
 
 - `browser_console_messages(only_errors=false, limit=200)`
 - `browser_network_requests(limit=200)`
-
-## Notes
-
-- `headless` currently controls moving window off-screen; underlying launch remains `playwright.launch(headless=False)`.
-- `browser_start(storage_state=...)` is best-effort and may rebuild context if needed.
